@@ -15,18 +15,18 @@ import (
 )
 
 type UpsertPostRequest struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	ImageUrl    string `json"image_url"`
-	Price       int    `json:"price"`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	ImageUrl    string  `json"image_url"`
+	Price       float64 `json:"price"`
 }
 
 type PostResponse struct {
-	Id          string `json:"id`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	ImageUrl    string `json"image_url"`
-	Price       int    `json:"price"`
+	Id          string  `json:"id`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	ImageUrl    string  `json"image_url"`
+	Price       float64 `json:"price"`
 }
 
 type PostUpdateResponse struct {

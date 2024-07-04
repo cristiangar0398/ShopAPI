@@ -14,6 +14,11 @@ type PostgresRepository struct {
 	db *sql.DB
 }
 
+var (
+	product models.Products
+	user    models.User
+)
+
 func NewPostgresRepository(url string) (*PostgresRepository, error) {
 	db, err := sql.Open("postgres", url)
 	if err != nil {
@@ -37,7 +42,6 @@ func (repo *PostgresRepository) UpdateProduct(ctx context.Context, product *mode
 	return err
 }
 func (repo *PostgresRepository) GetUserById(ctx context.Context, id string) (*models.User, error) {
-	var user models.User
 	rows, err := repo.db.QueryContext(ctx, "SELECT id , email FROM users WHERE id = $1", id)
 
 	if err != nil {
@@ -63,7 +67,6 @@ func (repo *PostgresRepository) GetUserById(ctx context.Context, id string) (*mo
 }
 
 func (repo *PostgresRepository) GetProductById(ctx context.Context, id string) (*models.Products, error) {
-	var product models.Products
 	rows, err := repo.db.QueryContext(ctx, "SELECT id , title , description , image_url , price ,created_at,user_id FROM products WHERE id = $1", id)
 
 	if err != nil {
@@ -89,7 +92,6 @@ func (repo *PostgresRepository) GetProductById(ctx context.Context, id string) (
 }
 
 func (repo *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	var user models.User
 	rows, err := repo.db.QueryContext(ctx, "SELECT id, email , password FROM users WHERE email = $1", email)
 	if err != nil {
 		return nil, err
@@ -119,7 +121,8 @@ func (repo *PostgresRepository) DeleteProduct(ctx context.Context, id string, us
 }
 
 func (repo *PostgresRepository) ListProducts(ctx context.Context, page uint64) ([]*models.Products, error) {
-	rows, err := repo.db.QueryContext(ctx, "SELECT id , title , description , image_url , price , user_id FROM products LIMIT $1 OFFSET $2", 0, 1)
+
+	rows, err := repo.db.QueryContext(ctx, "SELECT * FROM products LIMIT $1 OFFSET $2", 5, page*5)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +134,6 @@ func (repo *PostgresRepository) ListProducts(ctx context.Context, page uint64) (
 	}()
 	var products []*models.Products
 	for rows.Next() {
-		var product = models.Products{}
 		if err = rows.Scan(&product.Id, &product.Title, &product.Description, &product.ImageUrl, &product.Price, &product.Created_at, &product.UserId); err == nil {
 			products = append(products, &product)
 		}
