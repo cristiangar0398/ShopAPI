@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: my-postgres-app:latest
+    container_name: psql_container
+    ports:
+      - "54321:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_container
+    environment:
+      PORT: ${PORT}
+      JMT_SECRET: ${JMT_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      HASH_COST: ${HASH_COST}
+    ports:
+      - "5050:5050"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
