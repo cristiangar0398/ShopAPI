@@ -7,11 +7,14 @@ CREATE TABLE users (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS products;
 
-CREATE TABLE posts (
+CREATE TABLE products (
   id VARCHAR(32) PRIMARY KEY,
-  post_content VARCHAR(32) NOT NULL,
+  title VARCHAR(225) NOT NULL,
+  description TEXT,
+  image_url TEXT,
+  price NUMERIC(10, 2) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   user_id VARCHAR(32) NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id)

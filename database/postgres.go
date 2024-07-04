@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -28,13 +27,13 @@ func (repo *PostgresRepository) InsertUser(ctx context.Context, user *models.Use
 	return err
 }
 
-func (repo *PostgresRepository) InsertPost(ctx context.Context, post *models.Post) error {
-	_, err := repo.db.ExecContext(ctx, "INSERT INTO posts (id , post_content , user_id) VALUES ($1, $2 ,$3)", post.Id, post.Post_content, post.UserId)
+func (repo *PostgresRepository) InsertProduct(ctx context.Context, product *models.Products) error {
+	_, err := repo.db.ExecContext(ctx, "INSERT INTO products (id , title , description , image_url , price , user_id) VALUES ($1, $2 ,$3 ,$4 ,$5 ,$6)", product.Id, product.Title, product.Description, product.ImageUrl, product.Price, product.UserId)
 	return err
 }
 
-func (repo *PostgresRepository) UpdatePost(ctx context.Context, post *models.Post) error {
-	_, err := repo.db.ExecContext(ctx, "UPDATE posts SET post_content = $1 WHERE id = $2 and user_id = $3", post.Post_content, post.Id, post.UserId)
+func (repo *PostgresRepository) UpdateProduct(ctx context.Context, product *models.Products) error {
+	_, err := repo.db.ExecContext(ctx, "UPDATE products SET title = $1, description = $2, image_url = $3, price = $4 WHERE id = $5 and user_id = $6", product.Title, product.Description, product.ImageUrl, product.Price, product.Id, product.UserId)
 	return err
 }
 func (repo *PostgresRepository) GetUserById(ctx context.Context, id string) (*models.User, error) {
@@ -63,13 +62,13 @@ func (repo *PostgresRepository) GetUserById(ctx context.Context, id string) (*mo
 	return &user, nil
 }
 
-func (repo *PostgresRepository) GetPostById(ctx context.Context, id string) (*models.Post, error) {
-	var post models.Post
-	rows, err := repo.db.QueryContext(ctx, "SELECT id , post_content , created_at , user_id FROM posts WHERE id = $1", id)
+func (repo *PostgresRepository) GetProductById(ctx context.Context, id string) (*models.Products, error) {
+	var product models.Products
+	rows, err := repo.db.QueryContext(ctx, "SELECT id , title , description , image_url , price ,created_at,user_id FROM products WHERE id = $1", id)
 
 	if err != nil {
 		log.Fatal(err)
-		return &post, nil
+		return &product, nil
 	}
 
 	defer func() {
@@ -79,14 +78,14 @@ func (repo *PostgresRepository) GetPostById(ctx context.Context, id string) (*mo
 		}
 	}()
 	for rows.Next() {
-		if err = rows.Scan(&post.Id, &post.Post_content, &post.Created_at, &post.UserId); err != nil {
-			return &post, nil
+		if err = rows.Scan(&product.Id, &product.Title, &product.Description, &product.ImageUrl, &product.Price, &product.Created_at, &product.UserId); err != nil {
+			return &product, nil
 		}
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	return &post, nil
+	return &product, nil
 }
 
 func (repo *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
@@ -114,14 +113,13 @@ func (repo *PostgresRepository) GetUserByEmail(ctx context.Context, email string
 	return nil, nil
 }
 
-func (repo *PostgresRepository) DeletePost(ctx context.Context, id string, userdID string) error {
-	fmt.Println(userdID)
-	_, err := repo.db.ExecContext(ctx, "DELETE FROM posts WHERE id = $1 and user_id = $2", id, userdID)
+func (repo *PostgresRepository) DeleteProduct(ctx context.Context, id string, userdID string) error {
+	_, err := repo.db.ExecContext(ctx, "DELETE FROM products WHERE id = $1 and user_id = $2", id, userdID)
 	return err
 }
 
-func (repo *PostgresRepository) ListPost(ctx context.Context, page uint64) ([]*models.Post, error) {
-	rows, err := repo.db.QueryContext(ctx, "SELECT id, post_content, user_id, created_at FROM posts LIMIT $1 OFFSET $2", 5, page*5)
+func (repo *PostgresRepository) ListProducts(ctx context.Context, page uint64) ([]*models.Products, error) {
+	rows, err := repo.db.QueryContext(ctx, "SELECT id , title , description , image_url , price , user_id FROM products LIMIT $1 OFFSET $2", 0, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -131,17 +129,17 @@ func (repo *PostgresRepository) ListPost(ctx context.Context, page uint64) ([]*m
 			log.Fatal(err)
 		}
 	}()
-	var posts []*models.Post
+	var products []*models.Products
 	for rows.Next() {
-		var post = models.Post{}
-		if err = rows.Scan(&post.Id, &post.Post_content, &post.UserId, &post.Created_at); err == nil {
-			posts = append(posts, &post)
+		var product = models.Products{}
+		if err = rows.Scan(&product.Id, &product.Title, &product.Description, &product.ImageUrl, &product.Price, &product.Created_at, &product.UserId); err == nil {
+			products = append(products, &product)
 		}
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	return posts, nil
+	return products, nil
 }
 
 func (repo *PostgresRepository) Close() error {

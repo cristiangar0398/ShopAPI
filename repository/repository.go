@@ -14,11 +14,11 @@ type Repository interface {
 	InsertUser(ctx context.Context, user *models.User) error
 	GetUserById(ctx context.Context, id string) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
-	InsertPost(ctc context.Context, post *models.Post) error
-	GetPostById(ctx context.Context, id string) (*models.Post, error)
-	UpdatePost(ctx context.Context, post *models.Post) error
-	DeletePost(ctx context.Context, id string, userID string) error
-	ListPost(ctx context.Context, list uint64) ([]*models.Post, error)
+	InsertProduct(ctc context.Context, product *models.Products) error
+	GetProductById(ctx context.Context, id string) (*models.Products, error)
+	UpdateProduct(ctx context.Context, product *models.Products) error
+	DeleteProduct(ctx context.Context, id string, userID string) error
+	ListProducts(ctx context.Context, list uint64) ([]*models.Products, error)
 	Close() error
 }
 
@@ -30,32 +30,32 @@ func InsertUser(ctx context.Context, user *models.User) error {
 	return implementation.InsertUser(ctx, user)
 }
 
-func InsertPost(ctx context.Context, post *models.Post) error {
-	return implementation.InsertPost(ctx, post)
+func InsertProduct(ctx context.Context, post *models.Products) error {
+	return implementation.InsertProduct(ctx, post)
 }
 
 func GetUserById(ctx context.Context, id string) (*models.User, error) {
 	return implementation.GetUserById(ctx, id)
 }
 
-func GetPostById(ctx context.Context, id string) (*models.Post, error) {
-	return implementation.GetPostById(ctx, id)
+func GetProductById(ctx context.Context, id string) (*models.Products, error) {
+	return implementation.GetProductById(ctx, id)
 }
 
 func GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	return implementation.GetUserByEmail(ctx, email)
 }
 
-func UpdatePost(ctx context.Context, post *models.Post) error {
-	return implementation.UpdatePost(ctx, post)
+func UpdateProduct(ctx context.Context, post *models.Products) error {
+	return implementation.UpdateProduct(ctx, post)
 }
 
-func DeletePost(ctx context.Context, id string, userID string) error {
-	return implementation.DeletePost(ctx, id, userID)
+func DeleteProduct(ctx context.Context, id string, userID string) error {
+	return implementation.DeleteProduct(ctx, id, userID)
 }
 
-func ListPost(ctx context.Context, list uint64) ([]*models.Post, error) {
-	return implementation.ListPost(ctx, list)
+func ListProducts(ctx context.Context, list uint64) ([]*models.Products, error) {
+	return implementation.ListProducts(ctx, list)
 }
 
 func Close() error {

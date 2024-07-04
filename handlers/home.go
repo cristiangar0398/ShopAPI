@@ -17,7 +17,7 @@ func HomeHandler(s server.Server) http.HandlerFunc {
 		w.Header().Set("content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(HomeResponse{
-			Message: "Welcome api-REST",
+			Message: "Welcome ShopAPI",
 			Status:  http.StatusOK,
 		})
 

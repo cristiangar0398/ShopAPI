@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,27 +15,33 @@ import (
 )
 
 type UpsertPostRequest struct {
-	PostContent string `json:"post_content"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	ImageUrl    string `json"image_url"`
+	Price       int    `json:"price"`
 }
 
 type PostResponse struct {
 	Id          string `json:"id`
-	PostContent string `json:"post_content"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	ImageUrl    string `json"image_url"`
+	Price       int    `json:"price"`
 }
 
 type PostUpdateResponse struct {
 	Message string `json:"message"`
 }
 
-func InsertPostHandler(s server.Server) http.HandlerFunc {
+func InsertProducttHandler(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token, err := middleware.TokenParseString(w, s, r)
 		if err != nil {
 			log.Fatal(err)
 		}
 		if claims, ok := token.Claims.(*models.AppClaims); ok && token.Valid {
-			var postRequest = UpsertPostRequest{}
-			if err := json.NewDecoder(r.Body).Decode(&postRequest); err != nil {
+			var productRequest = UpsertPostRequest{}
+			if err := json.NewDecoder(r.Body).Decode(&productRequest); err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -45,13 +50,16 @@ func InsertPostHandler(s server.Server) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			post := models.Post{
-				Id:           id.String(),
-				Post_content: postRequest.PostContent,
-				UserId:       claims.UserId,
+			Product := models.Products{
+				Id:          id.String(),
+				Title:       productRequest.Title,
+				Description: productRequest.Description,
+				ImageUrl:    productRequest.ImageUrl,
+				Price:       productRequest.Price,
+				UserId:      claims.UserId,
 			}
 
-			err = repository.InsertPost(r.Context(), &post)
+			err = repository.InsertProduct(r.Context(), &Product)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -59,14 +67,17 @@ func InsertPostHandler(s server.Server) http.HandlerFunc {
 
 			var postMessage = models.WebsocketMessage{
 				Type:    "Post_Created",
-				Payload: post,
+				Payload: Product,
 			}
 
 			s.Hub().Broadcast(postMessage, nil)
 			w.Header().Set("content-type", "aaplication/json")
 			json.NewEncoder(w).Encode(PostResponse{
-				Id:          post.Id,
-				PostContent: post.Post_content,
+				Id:          Product.Id,
+				Title:       productRequest.Title,
+				Description: productRequest.Description,
+				ImageUrl:    productRequest.ImageUrl,
+				Price:       productRequest.Price,
 			})
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -75,47 +86,49 @@ func InsertPostHandler(s server.Server) http.HandlerFunc {
 	}
 }
 
-func GetPostByIdHandler(s server.Server) http.HandlerFunc {
+func GetProductByIdHandler(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
-		post, err := repository.GetPostById(r.Context(), params["id"])
-		fmt.Println("post_content :", post.Post_content)
+		product, err := repository.GetProductById(r.Context(), params["id"])
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("content-type", "aaplication/json")
-		json.NewEncoder(w).Encode(post)
+		json.NewEncoder(w).Encode(product)
 	}
 }
 
-func UpdatePostHandler(s server.Server) http.HandlerFunc {
+func UpdateProducttHandler(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token, err := middleware.TokenParseString(w, s, r)
 		if err != nil {
 			log.Fatal(err)
 		}
 		if claims, ok := token.Claims.(*models.AppClaims); ok && token.Valid {
-			var postRequest = UpsertPostRequest{}
-			if err := json.NewDecoder(r.Body).Decode(&postRequest); err != nil {
+			var productRequest = UpsertPostRequest{}
+			if err := json.NewDecoder(r.Body).Decode(&productRequest); err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 			params := mux.Vars(r)
-			Newpost := models.Post{
-				Id:           params["id"],
-				Post_content: postRequest.PostContent,
-				UserId:       claims.UserId,
+			NewProduct := models.Products{
+				Id:          params["id"],
+				Title:       productRequest.Title,
+				Description: productRequest.Description,
+				ImageUrl:    productRequest.ImageUrl,
+				Price:       productRequest.Price,
+				UserId:      claims.UserId,
 			}
 
-			err = repository.UpdatePost(r.Context(), &Newpost)
+			err = repository.UpdateProduct(r.Context(), &NewProduct)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			w.Header().Set("content-type", "aaplication/json")
 			json.NewEncoder(w).Encode(PostUpdateResponse{
-				Message: "Post Update",
+				Message: "Product Update",
 			})
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -124,7 +137,7 @@ func UpdatePostHandler(s server.Server) http.HandlerFunc {
 	}
 }
 
-func ListPostHandler(s server.Server) http.HandlerFunc {
+func ListProductHandler(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		pageStr := r.URL.Query().Get("page")
@@ -136,17 +149,17 @@ func ListPostHandler(s server.Server) http.HandlerFunc {
 				return
 			}
 		}
-		posts, err := repository.ListPost(r.Context(), page)
+		products, err := repository.ListProducts(r.Context(), page)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(posts)
+		json.NewEncoder(w).Encode(products)
 	}
 }
 
-func DeletePostHandler(s server.Server) http.HandlerFunc {
+func DeleteProductHandler(s server.Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token, err := middleware.TokenParseString(w, s, r)
 		if err != nil {
@@ -154,14 +167,14 @@ func DeletePostHandler(s server.Server) http.HandlerFunc {
 		}
 		if claims, ok := token.Claims.(*models.AppClaims); ok && token.Valid {
 			params := mux.Vars(r)
-			err = repository.DeletePost(r.Context(), params["postId"], claims.UserId)
+			err = repository.DeleteProduct(r.Context(), params["id"], claims.UserId)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			w.Header().Set("content-type", "aaplication/json")
 			json.NewEncoder(w).Encode(PostUpdateResponse{
-				Message: "Delete Post",
+				Message: "Delete product",
 			})
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
