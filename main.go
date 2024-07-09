@@ -27,6 +27,8 @@ func main() {
 	PORT := os.Getenv("PORT")
 	JMT_SECRET := os.Getenv("JMT_SECRET")
 	DATABASE_URL := os.Getenv("DATABASE_URL")
+	STATIC_PORT := os.Getenv("STATIC_PORT")
+	STATIC_DIR := os.Getenv("STATIC_DIR")
 
 	s, err := server.NewServer(context.Background(), &server.Config{
 		Port:        PORT,
@@ -38,6 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	go s.StartStaticFileServer(STATIC_PORT, STATIC_DIR)
 	s.Start(BindRoutes)
 
 }
@@ -57,5 +60,4 @@ func BindRoutes(s server.Server, r *mux.Router) {
 	r.HandleFunc("/product/{id}", handlers.DeleteProductHandler(s)).Methods(http.MethodDelete)
 	r.HandleFunc("/product", handlers.ListProductHandler(s)).Methods(http.MethodGet)
 
-	r.HandleFunc("/ws", s.Hub().HandleWebSockey)
 }
