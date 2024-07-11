@@ -65,12 +65,6 @@ func InsertProducttHandler(s server.Server) http.HandlerFunc {
 				return
 			}
 
-			var postMessage = models.WebsocketMessage{
-				Type:    "Post_Created",
-				Payload: Product,
-			}
-
-			s.Hub().Broadcast(postMessage, nil)
 			w.Header().Set("content-type", "aaplication/json")
 			json.NewEncoder(w).Encode(PostResponse{
 				Id:          Product.Id,
